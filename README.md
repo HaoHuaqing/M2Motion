@@ -1,2 +1,3 @@
 # M2Motion
-Use M2 to capture motion and velocity
+version0.1
+This version make motion and velocity record in initiative movement came true.
