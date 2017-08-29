@@ -15,8 +15,9 @@ public class PassiveMotionPanelManager : MonoBehaviour
     public GameObject Player;
     public GameObject Beacon;
 
-    public Button StartMotionBtn;
-    public Button StopMotionBtn;
+    public Button ReturnBtn;
+    public Button RelaxBtn;
+    public Button StopBtn;
     public Button ReturnMain;
 
     public InputField PassiveSpeed;
@@ -37,13 +38,24 @@ public class PassiveMotionPanelManager : MonoBehaviour
     public InputField outPath;
     static List<string> mWriteTxt = new List<string>();
     public GameObject redpoint;
+    private float m_LastUpdateShowTime = 0f;  //上一次更新帧率的时间;  
+    private float m_UpdateShowDeltaTime = 0.01f;//更新帧率的时间间隔;  
+    private int m_FrameUpdate = 0;//帧数;  
+    private float m_FPS = 0;
+
+    void Awake()
+    {
+        Application.targetFrameRate = 100;
+    }
 
     // Use this for initialization
     void Start()
     {
         ReturnMain.onClick.AddListener(ReturnMainBtnClick);
-        StartMotionBtn.onClick.AddListener(StartMotionBtnClick);
-        StopMotionBtn.onClick.AddListener(StopMotionBtnClick);
+        ReturnBtn.onClick.AddListener(ReturnMotionBtnClick);
+        RelaxBtn.onClick.AddListener(RelaxMotionBtnClick);
+        StopBtn.onClick.AddListener(StopMotionBtnClick);
+        m_LastUpdateShowTime = Time.realtimeSinceStartup;
         //GameObject redpoint = GameObject.Find("redpoint");
         //redpoint.transform.localPosition = new Vector3(0, 100, 0);
     }
@@ -51,6 +63,13 @@ public class PassiveMotionPanelManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        m_FrameUpdate++;
+        if (Time.realtimeSinceStartup - m_LastUpdateShowTime >= m_UpdateShowDeltaTime)
+        {
+            m_FPS = m_FrameUpdate / (Time.realtimeSinceStartup - m_LastUpdateShowTime);
+            m_FrameUpdate = 0;
+            m_LastUpdateShowTime = Time.realtimeSinceStartup;
+        }
         if (flag)
         {
             string[] temp = {DynaLinkHS.StatusMotRT.PosDataJ1.ToString(), ",", DynaLinkHS.StatusMotRT.PosDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.SpdDataJ1.ToString(), ",",
@@ -63,8 +82,13 @@ public class PassiveMotionPanelManager : MonoBehaviour
                 }
                 mWriteTxt.Remove(t);
             }
-            print(outPath.ToString());
         }
+    }
+
+    void OnGUI()
+    {
+        GUI.Label(new Rect(Screen.width / 2, 0, 100, 100), "FPS: " + m_FPS);
+        GUI.skin.label.normal.textColor = Color.black;
     }
 
     void ReturnMainBtnClick()
@@ -81,7 +105,7 @@ public class PassiveMotionPanelManager : MonoBehaviour
         DynaLinkHS.CmdServoOff();
     }
 
-    void StartMotionBtnClick()
+    void ReturnMotionBtnClick()
     {
         float xPos;
         float yPos;
@@ -106,12 +130,13 @@ public class PassiveMotionPanelManager : MonoBehaviour
         DynaLinkHS.CmdLinePassive(UI_XPosVal, UI_YPosVal, UI_PassiveSpd);
         flag = false;
     }
-    void PauseMotionBtnClick()
+    void StopMotionBtnClick()
     {
         //DynaLinkHS.CmdPauseMotion();
-        DynaLinkHS.CmdServoOn();
+        DynaLinkHS.CmdServoOff();
+        flag = false;
     }
-    void StopMotionBtnClick()
+    void RelaxMotionBtnClick()
     {        
         DynaLinkHS.CmdServoOff();
         flag = true;

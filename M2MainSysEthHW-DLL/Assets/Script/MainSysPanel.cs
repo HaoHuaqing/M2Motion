@@ -19,6 +19,7 @@ public class MainSysPanel : MonoBehaviour {
 
     public GameObject Player;
     public GameObject Beacon;
+    public GameObject redpoint;
 
     public Button ConnectNetBtn;
     public Button DisConnectNetBtn;
@@ -38,17 +39,11 @@ public class MainSysPanel : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        MassSimModeBtn.onClick.AddListener(MassSimModeBtnClick);
         ConnectNetBtn.onClick.AddListener(ConnectNetBtnClick);
         DisConnectNetBtn.onClick.AddListener(DisConnectNetBtnClick);
-        VectorTorModeBtn.onClick.AddListener(VectorTorModeBtnClick);
-        VectorTorTrapModeBtn.onClick.AddListener(VectorTorTrapModeBtnClick);
         SettingModeBtn.onClick.AddListener(SettingModeBtnClick);
         PassiveModeBtn.onClick.AddListener(PassiveModeBtnClick);
-        PassiveCirModeBtn.onClick.AddListener(PassiveCirModeBtnClick);
         ResistLTModeBtn.onClick.AddListener(ResistLTModeBtnClick);
-        AssistLTModeBtn.onClick.AddListener(AssistLTModeBtnClick);
-        TestModeBtn.onClick.AddListener(TestModeBtnClick);
         ExitAppBtn.onClick.AddListener(ExitAppBtnClick);
     }
 
@@ -68,65 +63,28 @@ public class MainSysPanel : MonoBehaviour {
         DynaLinkCore.StopSocket();
     }
 
-    void MassSimModeBtnClick()
-    {
-        MassPanel.gameObject.SetActive(true);
-        MainPanel.gameObject.SetActive(false);
-        Player.SetActive(true);
-    }
-    void VectorTorModeBtnClick()
-    {
-        VectorTorPanel.gameObject.SetActive(true);
-        MainPanel.gameObject.SetActive(false);
-        Player.SetActive(true);
-        Beacon.SetActive(true);
-    }
-
     void PassiveModeBtnClick()
     {
         PassiveMotionPanel.gameObject.SetActive(true);
         MainPanel.gameObject.SetActive(false);
         Player.SetActive(true);
         Beacon.SetActive(true);
+        redpoint.SetActive(true);
     }
-    void PassiveCirModeBtnClick()
-    {
-        PassiveCirclePanel.gameObject.SetActive(true);
-        MainPanel.gameObject.SetActive(false);
-        Player.SetActive(true);
-    }
+ 
     void ResistLTModeBtnClick()
     {
         ResistPanel.gameObject.SetActive(true);
         MainPanel.gameObject.SetActive(false);
         Player.SetActive(true);
-    }
-    void AssistLTModeBtnClick()
-    {
-        AssistPanel.gameObject.SetActive(true);
-        MainPanel.gameObject.SetActive(false);
-        Player.SetActive(true);
-    }
-    void VectorTorTrapModeBtnClick()
-    {
-        VectorTorTrapPanel.gameObject.SetActive(true);
-        MainPanel.gameObject.SetActive(false);
-        Player.SetActive(true);
         Beacon.SetActive(true);
+        redpoint.SetActive(true);
     }
-   
 
     void SettingModeBtnClick()
     {
         SettingPanel.gameObject.SetActive(true);
         MainPanel.gameObject.SetActive(false);
-    }
-
-    void TestModeBtnClick()
-    {
-        TestModePanel.gameObject.SetActive(true);
-        MainPanel.gameObject.SetActive(false);
-        Player.SetActive(true);
     }
 
     void ExitAppBtnClick()
