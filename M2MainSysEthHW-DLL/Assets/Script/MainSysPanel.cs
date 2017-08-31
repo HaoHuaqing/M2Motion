@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using UnityEngine.UI;
 using DLMotion;
+using System.Collections.Generic;
 
 public class MainSysPanel : MonoBehaviour {
 
@@ -27,23 +28,16 @@ public class MainSysPanel : MonoBehaviour {
     public Button StopUDPBtn;
 
     public Button MassSimModeBtn;
-    public Button VectorTorModeBtn;
     public Button SettingModeBtn;
-    public Button PassiveModeBtn;
-    public Button ResistLTModeBtn;
-    public Button AssistLTModeBtn;
-    public Button VectorTorTrapModeBtn;
-    public Button PassiveCirModeBtn;
-    public Button TraceRePlayModeBtn;
-    public Button TestModeBtn;
+
+
     // Use this for initialization
     void Start()
     {
         ConnectNetBtn.onClick.AddListener(ConnectNetBtnClick);
         DisConnectNetBtn.onClick.AddListener(DisConnectNetBtnClick);
         SettingModeBtn.onClick.AddListener(SettingModeBtnClick);
-        PassiveModeBtn.onClick.AddListener(PassiveModeBtnClick);
-        ResistLTModeBtn.onClick.AddListener(ResistLTModeBtnClick);
+        MassSimModeBtn.onClick.AddListener(MassSimModeBtnClick);
         ExitAppBtn.onClick.AddListener(ExitAppBtnClick);
     }
 
@@ -55,24 +49,14 @@ public class MainSysPanel : MonoBehaviour {
 
     void ConnectNetBtnClick()
     {
-        DynaLinkCore.ConnectClick();
+        
     }
 
     void DisConnectNetBtnClick()
     {
-        DynaLinkCore.StopSocket();
-    }
-
-    void PassiveModeBtnClick()
-    {
-        PassiveMotionPanel.gameObject.SetActive(true);
-        MainPanel.gameObject.SetActive(false);
-        Player.SetActive(true);
-        Beacon.SetActive(true);
-        redpoint.SetActive(true);
     }
  
-    void ResistLTModeBtnClick()
+    void MassSimModeBtnClick()
     {
         ResistPanel.gameObject.SetActive(true);
         MainPanel.gameObject.SetActive(false);

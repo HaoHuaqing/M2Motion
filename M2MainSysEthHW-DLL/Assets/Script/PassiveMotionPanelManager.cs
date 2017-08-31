@@ -38,6 +38,7 @@ public class PassiveMotionPanelManager : MonoBehaviour
     public InputField outPath;
     static List<string> mWriteTxt = new List<string>();
     public GameObject redpoint;
+    private string SavePath;
     private float m_LastUpdateShowTime = 0f;  //上一次更新帧率的时间;  
     private float m_UpdateShowDeltaTime = 0.01f;//更新帧率的时间间隔;  
     private int m_FrameUpdate = 0;//帧数;  
@@ -76,7 +77,7 @@ public class PassiveMotionPanelManager : MonoBehaviour
                 DynaLinkHS.StatusMotRT.SpdDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.TorDataJ1.ToString(),",",DynaLinkHS.StatusMotRT.TorDataJ2.ToString(), "\r\n" };
             foreach (string t in temp)
             {
-                using (StreamWriter writer = new StreamWriter(outPath.text, true, Encoding.UTF8))
+                using (StreamWriter writer = new StreamWriter(SavePath, true, Encoding.UTF8))
                 {
                     writer.Write(t);
                 }
@@ -137,7 +138,8 @@ public class PassiveMotionPanelManager : MonoBehaviour
         flag = false;
     }
     void RelaxMotionBtnClick()
-    {        
+    {
+        SavePath = outPath.text + ".csv";
         DynaLinkHS.CmdServoOff();
         flag = true;
     }
