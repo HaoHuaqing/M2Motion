@@ -38,24 +38,11 @@ public class ResistPanelManager : MonoBehaviour {
     private int m_FrameUpdate = 0;//帧数;  
     private float m_FPS = 0;
 
-    private TcpClient commandSocket;
-    private TcpClient emgSocket;
-    private const int commandPort = 50040;  //server command port
-    private const int emgPort = 50041;  //port for EMG data
-    private NetworkStream commandStream;
-    private NetworkStream emgStream;
-    private StreamReader commandReader;
-    private StreamWriter commandWriter;
-    private bool connected = false;
-    private const string COMMAND_QUIT = "QUIT";
-    private const string COMMAND_START = "START";
-    private const string COMMAND_STOP = "STOP";
-    private float[] emgData = new float[16];
-    private Thread emgThread;
     private int sum;
     private int[,] trial = new int[100, 10];
     private int count = 0;
     public Text Trial;
+    public AudioSource music;
 
     void Awake()
     {
@@ -87,9 +74,7 @@ public class ResistPanelManager : MonoBehaviour {
         {
             string[] temp = {DynaLinkHS.StatusMotRT.PosDataJ1.ToString(), ",", DynaLinkHS.StatusMotRT.PosDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.SpdDataJ1.ToString(), ",",
                 DynaLinkHS.StatusMotRT.SpdDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.TorDataJ1.ToString(),",",DynaLinkHS.StatusMotRT.TorDataJ2.ToString(),",",
-                DynaLinkHS.StatusADC.AdcDataS1.ToString(), ",", DynaLinkHS.StatusADC.AdcDataS2.ToString(), ",", emgData[(int)(0)].ToString(), ",", emgData[(int)(1)].ToString(), ",",
-                emgData[(int)(2)].ToString(), ",", emgData[(int)(3)].ToString(), ",", emgData[(int)(4)].ToString(), ",", emgData[(int)(5)].ToString(), ",", emgData[(int)(6)].ToString(), ",",
-                emgData[(int)(7)].ToString(), "\r\n" };
+                DynaLinkHS.StatusADC.AdcDataS1.ToString(), ",", DynaLinkHS.StatusADC.AdcDataS2.ToString(), "\r\n" };
             foreach (string t in temp)
             {
                 using (StreamWriter writer = new StreamWriter(SavePathResist, true, Encoding.UTF8))
@@ -114,27 +99,7 @@ public class ResistPanelManager : MonoBehaviour {
         Player.SetActive(false);
         Beacon.SetActive(false);
         redpoint.SetActive(false);
-        DynaLinkCore.StopSocket();
-
-        //Check if running and display error message if not
-        if (running)
-        {
-            print("Can't quit while acquiring data!");
-            return;
-        }
-
-        //send QUIT command
-        SendCommand(COMMAND_QUIT);
-
-        connected = false;  //no longer connected
-
-        //Close all streams and connections
-        commandReader.Close();
-        commandWriter.Close();
-        commandStream.Close();
-        commandSocket.Close();
-        emgStream.Close();
-        emgSocket.Close();
+        DynaLinkCore.StopSocket();        
     }
 
     void EMStopBtnClick()
@@ -165,18 +130,12 @@ public class ResistPanelManager : MonoBehaviour {
         DynaLinkHS.CmdLinePassive(OriX, OriY, 200000);
         print(OriX + "-" + OriY);
         running = false;
+        music.Play();
     }
     void StopMotionBtnClick()
     {
         DynaLinkHS.CmdServoOff();
         running = false;
-        //Wait for threads to terminate
-        emgThread.Join();
-
-        //Send stop command to server
-        string response = SendCommand(COMMAND_STOP);
-        if (!response.StartsWith("OK"))
-            print("Server failed to stop. Further actions may fail.");
     }
 
     void ReleaseMotionBtnClick()
@@ -190,72 +149,17 @@ public class ResistPanelManager : MonoBehaviour {
             SavePathResist = outPath.text + count + ".csv";
         }
         
-
-
-        if (!connected)
-        {
-            print("Not connected.");
-            return;
-        }
         Trial.text = count.ToString();
         DynaLinkHS.CmdMassSim(trial[count,5], trial[count, 6]);  //执行质量模式
         print(trial[count, 5] + "-" + trial[count, 6]);
         count++;
-
-        //Clear stale data
-        emgData = new float[16];
-
-        //Establish data connections and creat streams
-        emgSocket = new TcpClient("localhost", emgPort);
-        emgStream = emgSocket.GetStream();
-
-        //Create data acquisition threads
-        emgThread = new Thread(emgWorker);
-        emgThread.IsBackground = true;
-
-        //Indicate we are running and start up the acquisition threads
+        music.Play();
         running = true;
-        emgThread.Start();
-
-        //Send start command to server to stream data
-        string response = SendCommand(COMMAND_START);
-
-        //check response
-        if (response.StartsWith("OK"))
-        {
-            print("Start");
-        }
-        else
-        {
-            running = false;    //stop threads
-            print("Emmmm");
-        }
     }
 
     void ConnectEMGBtnClick()
     {
         DynaLinkCore.ConnectClick();
-
-        try
-        {
-            //Establish TCP/IP connection to server using URL entered
-            commandSocket = new TcpClient("localhost", commandPort);
-
-            //Set up communication streams
-            commandStream = commandSocket.GetStream();
-            commandReader = new StreamReader(commandStream, Encoding.ASCII);
-            commandWriter = new StreamWriter(commandStream, Encoding.ASCII);
-
-            //Get initial response from server and display
-            print(commandReader.ReadLine());
-            commandReader.ReadLine();   //get extra line terminator
-            connected = true;   //iindicate that we are connected
-        }
-        catch (Exception connectException)
-        {
-            //connection failed, display error message
-            print("Could not connect.\n" + connectException.Message);
-        }
 
         CSVHelper.Instance().ReadCSVFile("config", (table) => {
 
@@ -280,55 +184,5 @@ public class ResistPanelManager : MonoBehaviour {
                 trial[i, 6] = int.Parse((table[i.ToString()])["Factor"]);
             }
         });
-    }
-
-    //Send a command to the server and get the response
-    private string SendCommand(string command)
-    {
-        string response = "";
-
-        //Check if connected
-        if (connected)
-        {
-            //Send the command
-            commandWriter.WriteLine(command);
-            commandWriter.WriteLine();  //terminate command
-            commandWriter.Flush();  //make sure command is sent immediately
-
-            //Read the response line and display    
-            response = commandReader.ReadLine();
-            commandReader.ReadLine();   //get extra line terminator
-            print(response);
-        }
-        else
-            print("Not connected.");
-        return response;    //return the response we got
-    }
-
-    //Thread for emg data acquisition
-    private void emgWorker()
-    {
-        emgStream.ReadTimeout = 100;    //set timeout
-
-        //Create a binary reader to read the data
-        BinaryReader reader = new BinaryReader(emgStream);
-
-        while (running)
-        {
-            try
-            {
-                //Demultiplex the data and save for UI display
-                for (int sn = 0; sn < 16; ++sn)
-                {
-                    emgData[sn] = reader.ReadSingle();
-                }
-            }
-            catch
-            {
-                //ignore timeouts, but force a check of the running flag
-            }
-        }
-
-        reader.Close(); //close the reader. This also disconnects
     }
 }
