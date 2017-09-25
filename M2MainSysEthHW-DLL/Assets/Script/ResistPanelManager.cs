@@ -9,7 +9,8 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading;
 
-public class ResistPanelManager : MonoBehaviour {
+public class ResistPanelManager : MonoBehaviour
+{
 
     public MainSysPanel BckMainPanel;
     public ResistPanelManager ResistSelfPanel;
@@ -33,10 +34,6 @@ public class ResistPanelManager : MonoBehaviour {
     static List<string> mWriteTxt = new List<string>();
     public GameObject redpoint;
     private string SavePathResist;
-    private float m_LastUpdateShowTime = 0f;  //上一次更新帧率的时间;  
-    private float m_UpdateShowDeltaTime = 0.01f;//更新帧率的时间间隔;  
-    private int m_FrameUpdate = 0;//帧数;  
-    private float m_FPS = 0;
 
     private int sum;
     private int[,] trial = new int[100, 10];
@@ -46,30 +43,12 @@ public class ResistPanelManager : MonoBehaviour {
 
     void Awake()
     {
-        Application.targetFrameRate = 100;
+        //Record data every 10ms
+        InvokeRepeating("RecordData", 0, 0.01F);
     }
 
-    // Use this for initialization
-    void Start ()
+    void RecordData()
     {
-        ReturnMain.onClick.AddListener(ReturnMainBtnClick);
-        ReturnMotionBtn.onClick.AddListener(ReturnMotionBtnClick);
-        ReleaseMotionBtn.onClick.AddListener(ReleaseMotionBtnClick);
-        ConnectEMG.onClick.AddListener(ConnectEMGBtnClick);
-        StopMotionBtn.onClick.AddListener(StopMotionBtnClick);
-        m_LastUpdateShowTime = Time.realtimeSinceStartup;
-    }
-	
-	// Update is called once per frame
-	void Update ()
-    {
-        m_FrameUpdate++;
-        if (Time.realtimeSinceStartup - m_LastUpdateShowTime >= m_UpdateShowDeltaTime)
-        {
-            m_FPS = m_FrameUpdate / (Time.realtimeSinceStartup - m_LastUpdateShowTime);
-            m_FrameUpdate = 0;
-            m_LastUpdateShowTime = Time.realtimeSinceStartup;
-        }
         if (running)
         {
             string[] temp = {DynaLinkHS.StatusMotRT.PosDataJ1.ToString(), ",", DynaLinkHS.StatusMotRT.PosDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.SpdDataJ1.ToString(), ",",
@@ -86,11 +65,21 @@ public class ResistPanelManager : MonoBehaviour {
         }
     }
 
-    void OnGUI()
+    void Start()
     {
-        GUI.Label(new Rect(Screen.width / 2, 0, 100, 100), "FPS: " + m_FPS);
-        GUI.skin.label.normal.textColor = Color.black;
+        ReturnMain.onClick.AddListener(ReturnMainBtnClick);
+        ReturnMotionBtn.onClick.AddListener(ReturnMotionBtnClick);
+        ReleaseMotionBtn.onClick.AddListener(ReleaseMotionBtnClick);
+        ConnectEMG.onClick.AddListener(ConnectEMGBtnClick);
+        StopMotionBtn.onClick.AddListener(StopMotionBtnClick);
     }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
 
     void ReturnMainBtnClick()
     {
@@ -99,7 +88,7 @@ public class ResistPanelManager : MonoBehaviour {
         Player.SetActive(false);
         Beacon.SetActive(false);
         redpoint.SetActive(false);
-        DynaLinkCore.StopSocket();        
+        DynaLinkCore.StopSocket();
     }
 
     void EMStopBtnClick()
@@ -112,7 +101,7 @@ public class ResistPanelManager : MonoBehaviour {
         float xPos;
         float yPos;
         Beacon.SetActive(true);
-        OriX = trial[count,1];
+        OriX = trial[count, 1];
         OriY = trial[count, 2];
         xPos = OriX / ModulePara.TrgXPosScale - 900;
         yPos = OriY / ModulePara.TrgYPosScale - 270;
@@ -140,7 +129,7 @@ public class ResistPanelManager : MonoBehaviour {
 
     void ReleaseMotionBtnClick()
     {
-        if(count<10)
+        if (count < 10)
         {
             SavePathResist = outPath.text + "0" + count + ".csv";
         }
@@ -148,13 +137,13 @@ public class ResistPanelManager : MonoBehaviour {
         {
             SavePathResist = outPath.text + count + ".csv";
         }
-        
+
         Trial.text = count.ToString();
-        DynaLinkHS.CmdMassSim(trial[count,5], trial[count, 6]);  //执行质量模式
+        DynaLinkHS.CmdInertiaSim(trial[count, 5], trial[count, 6]);  //执行质量模式
         print(trial[count, 5] + "-" + trial[count, 6]);
         count++;
-        music.Play();
         running = true;
+        music.Play();  
     }
 
     void ConnectEMGBtnClick()
@@ -172,7 +161,7 @@ public class ResistPanelManager : MonoBehaviour {
             //    }
             //}
             //可以拿到表中任意一项数据
-            sum = int.Parse(table["0"]["Factor"]);
+            sum = int.Parse(table["0"]["Factor"])-1000;
             for (int i = 0; i <= sum; i++)
             {
                 trial[i, 0] = int.Parse((table[i.ToString()])["id"]);
