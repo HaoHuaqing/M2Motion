@@ -13,7 +13,6 @@ public class MainSysPanel : MonoBehaviour {
     public VectorTorPanelManager VectorTorPanel;
     public VectorTorTrapPanelManager VectorTorTrapPanel;
     public ResistPanelManager ResistPanel;
-    public AssistPanelManager AssistPanel;
     public PassiveMotionPanelManager PassiveMotionPanel;
     public PassiveCirclePanelManager PassiveCirclePanel;
     public TestModePanelManager TestModePanel;
@@ -64,6 +63,7 @@ public class MainSysPanel : MonoBehaviour {
         Beacon.SetActive(true);
         redpoint.SetActive(true);
     }
+
 
     void SettingModeBtnClick()
     {

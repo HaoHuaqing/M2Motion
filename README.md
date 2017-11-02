@@ -1,5 +1,5 @@
 # M2Motion
-version 0.4
+version 0.5
 Ip should be 192.169.102.12    
 This version allows M2 to complete the inertia load simulation, while outtputing trigger signal(music).
 
@@ -18,6 +18,7 @@ This version allows M2 to complete the inertia load simulation, while outtputing
 2. Path is the filename of data. If your trial number is 3 and the Path is "test", the name of data should be test0.csv, test1.csv, test2.csv and test3.csv.
 
 ## MotionConfig
+* The task number 0 means server off, and number 1 means mass simulation.
 * The range of OriX and DstX are between 10000 and 150000.
 * The range of OriY and DstY are between 10000 and 110000.
 * The range of Mass is between 20 and 100. (100 is lighter.)

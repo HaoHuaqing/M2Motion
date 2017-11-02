@@ -23,6 +23,8 @@ public class ResistPanelManager : MonoBehaviour
     public Button StopMotionBtn;
     public Button ConnectEMG;
     public Button ReturnMain;
+    public Button Next;
+    public Button Previous;
 
     public static int OriX;
     public static int OriY;
@@ -38,8 +40,10 @@ public class ResistPanelManager : MonoBehaviour
     private int sum;
     private int[,] trial = new int[100, 10];
     private int count = 0;
+    private string partition = "-----------------------";
     public Text Trial;
     public AudioSource music;
+    List<string> listToHoldData =  new List<string>();
 
     void Awake()
     {
@@ -72,6 +76,34 @@ public class ResistPanelManager : MonoBehaviour
         ReleaseMotionBtn.onClick.AddListener(ReleaseMotionBtnClick);
         ConnectEMG.onClick.AddListener(ConnectEMGBtnClick);
         StopMotionBtn.onClick.AddListener(StopMotionBtnClick);
+        Next.onClick.AddListener(NextBtnClick);
+        Previous.onClick.AddListener(PreviousBtnClick);
+
+
+        CSVHelper.Instance().ReadCSVFile("config", (table) => {
+
+            // 可以遍历整张表
+            //foreach (CSVLine line in table)
+            //{
+            //    foreach (KeyValuePair<string, string> item in line)
+            //    {
+            //        Debug.Log(string.Format("item key = {0} item value = {1}", item.Key, item.Value));
+            //    }
+            //}
+            //可以拿到表中任意一项数据
+            sum = int.Parse(table["0"]["Factor"]) - 1000;
+            for (int i = 0; i <= sum; i++)
+            {
+                trial[i, 0] = int.Parse((table[i.ToString()])["id"]);
+                trial[i, 1] = int.Parse((table[i.ToString()])["Task"]);
+                trial[i, 2] = int.Parse((table[i.ToString()])["OriX"]);
+                trial[i, 3] = int.Parse((table[i.ToString()])["OriY"]);
+                trial[i, 4] = int.Parse((table[i.ToString()])["DstX"]);
+                trial[i, 5] = int.Parse((table[i.ToString()])["DstY"]);
+                trial[i, 6] = int.Parse((table[i.ToString()])["Mass"]);
+                trial[i, 7] = int.Parse((table[i.ToString()])["Factor"]);
+            }
+        });
     }
 
     // Update is called once per frame
@@ -80,6 +112,26 @@ public class ResistPanelManager : MonoBehaviour
         
     }
 
+    void NextBtnClick()
+    {
+        count = Math.Min(sum, count + 1);
+        Trial.text = count.ToString();
+    }
+
+    void PreviousBtnClick()
+    {
+        count = Math.Max(0, count - 1);
+        Trial.text = count.ToString();
+        for(int i = 0; i<=5; i++)
+        {
+            using (StreamWriter writer = new StreamWriter(SavePathResist, true, Encoding.UTF8))
+            {
+                writer.Write("\r\n");
+                writer.Write(partition);
+                writer.Write("\r\n");
+            }
+        }
+    }
 
     void ReturnMainBtnClick()
     {
@@ -101,8 +153,8 @@ public class ResistPanelManager : MonoBehaviour
         float xPos;
         float yPos;
         Beacon.SetActive(true);
-        OriX = trial[count, 1];
-        OriY = trial[count, 2];
+        OriX = trial[count, 2];
+        OriY = trial[count, 3];
         xPos = OriX / ModulePara.TrgXPosScale - 900;
         yPos = OriY / ModulePara.TrgYPosScale - 270;
         Beacon.transform.localPosition = new Vector3(xPos, yPos, 0);
@@ -110,8 +162,8 @@ public class ResistPanelManager : MonoBehaviour
         float RedX;
         float RedY;
         redpoint.SetActive(true);
-        DstX = trial[count, 3];
-        DstY = trial[count, 4];
+        DstX = trial[count, 4];
+        DstY = trial[count, 5];
         RedX = DstX / ModulePara.TrgXPosScale - 900;
         RedY = DstY / ModulePara.TrgYPosScale - 270;
         redpoint.transform.localPosition = new Vector3(RedX, RedY, 0);
@@ -120,11 +172,13 @@ public class ResistPanelManager : MonoBehaviour
         print(OriX + "-" + OriY);
         running = false;
         music.Play();
+
     }
     void StopMotionBtnClick()
     {
         DynaLinkHS.CmdServoOff();
         running = false;
+
     }
 
     void ReleaseMotionBtnClick()
@@ -139,8 +193,17 @@ public class ResistPanelManager : MonoBehaviour
         }
 
         Trial.text = count.ToString();
-        DynaLinkHS.CmdInertiaSim(trial[count, 5], trial[count, 6]);  //执行质量模式
-        print(trial[count, 5] + "-" + trial[count, 6]);
+        if(trial[count,1] == 0)
+        {
+            DynaLinkHS.CmdServoOff();
+            print("off");
+        }
+        else
+        {
+            DynaLinkHS.CmdInertiaSim(trial[count, 6], trial[count, 7]);  //执行质量模式
+            print(trial[count, 6] + "-" + trial[count, 7]);
+        }
+        print(trial[count, 0]);
         count++;
         running = true;
         music.Play();  
@@ -149,29 +212,5 @@ public class ResistPanelManager : MonoBehaviour
     void ConnectEMGBtnClick()
     {
         DynaLinkCore.ConnectClick();
-
-        CSVHelper.Instance().ReadCSVFile("config", (table) => {
-
-            // 可以遍历整张表
-            //foreach (CSVLine line in table)
-            //{
-            //    foreach (KeyValuePair<string, string> item in line)
-            //    {
-            //        Debug.Log(string.Format("item key = {0} item value = {1}", item.Key, item.Value));
-            //    }
-            //}
-            //可以拿到表中任意一项数据
-            sum = int.Parse(table["0"]["Factor"])-1000;
-            for (int i = 0; i <= sum; i++)
-            {
-                trial[i, 0] = int.Parse((table[i.ToString()])["id"]);
-                trial[i, 1] = int.Parse((table[i.ToString()])["OriX"]);
-                trial[i, 2] = int.Parse((table[i.ToString()])["OriY"]);
-                trial[i, 3] = int.Parse((table[i.ToString()])["DstX"]);
-                trial[i, 4] = int.Parse((table[i.ToString()])["DstY"]);
-                trial[i, 5] = int.Parse((table[i.ToString()])["Mass"]);
-                trial[i, 6] = int.Parse((table[i.ToString()])["Factor"]);
-            }
-        });
     }
 }
