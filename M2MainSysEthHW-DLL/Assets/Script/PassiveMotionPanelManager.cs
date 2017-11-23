@@ -74,7 +74,7 @@ public class PassiveMotionPanelManager : MonoBehaviour
         if (flag)
         {
             string[] temp = {DynaLinkHS.StatusMotRT.PosDataJ1.ToString(), ",", DynaLinkHS.StatusMotRT.PosDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.SpdDataJ1.ToString(), ",",
-                DynaLinkHS.StatusMotRT.SpdDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.TorDataJ1.ToString(),",",DynaLinkHS.StatusMotRT.TorDataJ2.ToString(), "\r\n" };
+                DynaLinkHS.StatusMotRT.SpdDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.TorDataJ1.ToString(),",",DynaLinkHS.StatusMotRT.TorDataJ2.ToString(), "," , DynaLinkHS.StatusDigiInput.IDL[1].ToString(), ",", "\r\n" };
             foreach (string t in temp)
             {
                 using (StreamWriter writer = new StreamWriter(SavePath, true, Encoding.UTF8))

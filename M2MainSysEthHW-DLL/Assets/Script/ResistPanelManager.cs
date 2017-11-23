@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System;
 using System.Collections;
 using UnityEngine.UI;
@@ -8,6 +9,9 @@ using System.IO;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
+using System.Net;
+using System.Net.Sockets;
+
 
 public class ResistPanelManager : MonoBehaviour
 {
@@ -32,6 +36,7 @@ public class ResistPanelManager : MonoBehaviour
     public static int DstY;
 
     private bool running = false;
+    private bool connectflag = true;
     public InputField outPath;
     static List<string> mWriteTxt = new List<string>();
     public GameObject redpoint;
@@ -42,8 +47,9 @@ public class ResistPanelManager : MonoBehaviour
     private int count = 0;
     private string partition = "-----------------------";
     public Text Trial;
-    public AudioSource music;
     List<string> listToHoldData =  new List<string>();
+
+    Socket server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);  //实现 Berkeley 套接字接口
 
     void Awake()
     {
@@ -57,7 +63,7 @@ public class ResistPanelManager : MonoBehaviour
         {
             string[] temp = {DynaLinkHS.StatusMotRT.PosDataJ1.ToString(), ",", DynaLinkHS.StatusMotRT.PosDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.SpdDataJ1.ToString(), ",",
                 DynaLinkHS.StatusMotRT.SpdDataJ2.ToString(), ",", DynaLinkHS.StatusMotRT.TorDataJ1.ToString(),",",DynaLinkHS.StatusMotRT.TorDataJ2.ToString(),",",
-                DynaLinkHS.StatusADC.AdcDataS1.ToString(), ",", DynaLinkHS.StatusADC.AdcDataS2.ToString(), "\r\n" };
+                DynaLinkHS.StatusADC.AdcDataS1.ToString(), ",", DynaLinkHS.StatusADC.AdcDataS2.ToString(), ",", DynaLinkHS.StatusDigiInput.IDL[1].ToString(),"\r\n" };
             foreach (string t in temp)
             {
                 using (StreamWriter writer = new StreamWriter(SavePathResist, true, Encoding.UTF8))
@@ -171,7 +177,8 @@ public class ResistPanelManager : MonoBehaviour
         DynaLinkHS.CmdLinePassive(OriX, OriY, 200000);
         print(OriX + "-" + OriY);
         running = false;
-        music.Play();
+        IPEndPoint ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8001);
+        server.SendTo(Encoding.ASCII.GetBytes("H"), ip);//发送信息
 
     }
     void StopMotionBtnClick()
@@ -183,6 +190,7 @@ public class ResistPanelManager : MonoBehaviour
 
     void ReleaseMotionBtnClick()
     {
+        
         if (count < 10)
         {
             SavePathResist = outPath.text + "0" + count + ".csv";
@@ -195,8 +203,7 @@ public class ResistPanelManager : MonoBehaviour
         Trial.text = count.ToString();
         if(trial[count,1] == 0)
         {
-            DynaLinkHS.CmdServoOff();
-            print("off");
+            DynaLinkHS.CmdAssistLT(trial[count, 6]);
         }
         else
         {
@@ -206,11 +213,17 @@ public class ResistPanelManager : MonoBehaviour
         print(trial[count, 0]);
         count++;
         running = true;
-        music.Play();  
+        IPEndPoint ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8001);
+        server.SendTo(Encoding.ASCII.GetBytes("L"), ip);//发送信息
     }
 
     void ConnectEMGBtnClick()
     {
-        DynaLinkCore.ConnectClick();
+        if(connectflag)
+        {
+            DynaLinkCore.ConnectClick();
+        }
+        connectflag = false;
+        
     }
 }
