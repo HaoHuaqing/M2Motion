@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System;
 using System.Collections;
 using UnityEngine.UI;
@@ -115,7 +114,21 @@ public class ResistPanelManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            ReturnMotionBtnClick();
+            Debug.Log("您按下了A键");
+        }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            ReleaseMotionBtnClick();
+            Debug.Log("您按下了S键");
+        }
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            StopMotionBtnClick();
+            Debug.Log("您按下了D键");
+        }
     }
 
     void NextBtnClick()
