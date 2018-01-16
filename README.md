@@ -11,7 +11,7 @@ This version allows M2 to complete the inertia load simulation, while outtputing
 4. Open the UDPserver, M2Motion and connect the DIO0 and GND of Data Acquisition Card to the sensor.
 5. Enter the MassSim in M2motion, press connect button to connect M2.
 6. Open the EMG sensor, start EMG record.
-7. Press the Return and Release buttons, you can see the number of trial increase. The data records when you press Release button(DIO0 -> 0v). If the number reach your set in config.csv, press stop.
+7. Press the Return(keyboard A) and Release(keyboard S) buttons, you can see the number of trial increase. The data records when you press Release button(DIO0 -> 0v). If the number reach your set in config.csv, press stop(keyboard D).
 8. Press ReturnMain and Exit in turn.  
 
 ## attention
